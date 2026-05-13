@@ -1,35 +1,40 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, split, explode, lower
+import pyspark.sql.functions as F
 
 spark = SparkSession.builder.appName("ale").getOrCreate()
 
-book = spark.read.text("./data/gutenberg_books/1342-0.txt")
+spark.sparkContext.setLogLevel("WARN")
 
-lines = (
-    book.
+results = (
+    spark.
+    read.
+    text("./data/gutenberg_books/*.txt").
     select(
-        split(
+        F.split(
             "value", 
             pattern=" "
         ).
         alias("line")
-    )
-)
-
-words = (
-
-    lines.
+    ).
     select(
-        explode(col("line")).
+        F.explode(F.col("line")).
         alias("word")
-    )
-)
-
-words_lower = (
-    words.
+    ).
     select(
-        lower("word").
+        F.lower("word").
         alias("word_lower")
-    )
+    ).
+    select(
+        F.regexp_extract(
+            "word_lower", 
+            "[a-z]+", 
+            0
+        ).alias("word")
+    ).
+    filter(F.col("word") != "").
+    groupby(F.col("word")).
+    count().
+    orderBy("count", ascending=False)
 )
 
+results.coalesce(1).write.csv("simple_count.csv", mode="overwrite")
