@@ -43,7 +43,6 @@ print("SequenceNO" in logs.columns)
     show()
 
 )
-"""
 
 (
 
@@ -61,6 +60,39 @@ print("SequenceNO" in logs.columns)
     show()
 
 )
+"""
+
+logs = (
+    logs.
+    withColumn(
+        "Duration_seconds", 
+        (
+            F.col("Duration").substr(1,2).cast("int") * 60 * 60 +
+            F.col("Duration").substr(4,2).cast("int") * 60 + 
+            F.col("Duration").substr(7,2).cast("int")
+        )
+    )
+)
+
+#logs.select("Duration_seconds").show()
+
+logs = logs.withColumnRenamed("Duration_seconds", "duration_seconds")
+
+
+(
+    logs.
+    select(sorted(logs.columns)).
+    printSchema()
+)
+
+
+
+
+"""
+(
+    logs.toDF(*[x.lower() for x in logs.columns]).show()
+)
+"""
 
 
 
