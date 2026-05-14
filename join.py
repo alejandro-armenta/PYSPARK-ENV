@@ -135,10 +135,9 @@ full_log = (
 
 )
 
-full_log.printSchema()
 
 #22 program clases 
-print(
+(
     full_log.
     
     groupBy(
@@ -154,10 +153,77 @@ print(
 
     ).
 
-    orderBy("duration_total", ascending=False).
-    
-    show(
-        50, 
-        truncate=False
+    orderBy("duration_total", ascending=False)
+)
+
+full_log.printSchema()
+
+
+
+(
+    full_log.
+    select(
+        F.col("ProgramClassCD")
+    ).show()
+)
+
+full_log = (
+    full_log.
+    withColumn("ale",
+        F.when(
+            F.
+            trim(F.col("ProgramClassCD")).
+            isin(
+                ["COM", "PRC", "PGI", "PRO", "PSA", "MAG", "LOC", "SPO", "MER", "SOL"]
+            ),
+            F.col("duration_seconds")
+        ).otherwise(0)
     )
 )
+
+
+
+answer = (
+    full_log.
+    groupBy("LogIdentifierID").
+    agg(
+        F.sum(F.col("ale")).alias("duration_comercial"), 
+        F.sum(F.col("duration_seconds")).alias("duration_total"),
+    ).
+    withColumn(
+        "commercial_ratio",
+        F.col("duration_comercial") / F.col("duration_total")
+    )
+)
+
+
+answer.printSchema()
+
+
+(
+    answer.
+    orderBy(
+        "commercial_ratio",
+        ascending=False
+    ).
+    show(1000,False)
+)
+
+
+answer_no_null = (
+    answer.
+    dropna(subset=["commercial_ratio"]).
+    orderBy(
+        "commercial_ratio",
+        ascending=False
+    )
+)
+
+answer_no_null = (
+    answer.fillna(0).
+    orderBy(
+        "commercial_ratio",
+        ascending=False
+    )
+)
+
