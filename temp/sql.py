@@ -17,14 +17,93 @@ column_split = (
         np.array(logs.columns), len(logs.columns) // 3
     )
 )
+
 """
 for x in column_split:
     logs.select(*x).show(truncate=False)
 logs.printSchema()
 """
 
+logs = logs.drop("BroadcastLogID",
+                 "SequenceNO"
+)   
 
-logs = logs.drop("BroadcastLogID","SequenceNO")   
+
+
+logs = (
+    logs.
+    withColumn(
+        "Duration_seconds", 
+        (
+            F.col("Duration").substr(1,2).cast("int") * 60 * 60 +
+            F.col("Duration").substr(4,2).cast("int") * 60 + 
+            F.col("Duration").substr(7,2).cast("int")
+        )
+    )
+)
+
+#logs.select("Duration_seconds").show()
+
+logs = logs.withColumnRenamed("Duration_seconds", "duration_seconds")
+
+
+logs.printSchema()
+
+def print_summary(df):
+    (
+
+        df.
+        summary().
+        transpose().
+        select(
+            "key","count","mean","stddev","min","25%","50%","75%","max"
+        ).
+        show()
+
+    )
+
+print_summary(logs)
+
+
+
+
+
+
+
+
+"""
+(
+    logs.
+    select(sorted(logs.columns)).
+    printSchema()
+)
+
+
+
+for i in logs.columns:
+    logs.describe(i).show()
+"""
+
+"""
+(
+    logs.toDF(*[x.lower() for x in logs.columns]).show()
+)
+"""
+
+
+
+
+
+"""
+logs.printSchema()
+
+logs.select("BroadcastLogID","LogServiceID","LogDate").show()
+
+logs.select(*["BroadcastLogID","LogServiceID","LogDate"]).show()
+
+logs.select([F.col("BroadcastLogID"),F.col("LogServiceID")]).show()
+
+"""
 
 """
 print("BroadcastLogID" in logs.columns)
@@ -61,51 +140,3 @@ print("SequenceNO" in logs.columns)
 
 )
 """
-
-logs = (
-    logs.
-    withColumn(
-        "Duration_seconds", 
-        (
-            F.col("Duration").substr(1,2).cast("int") * 60 * 60 +
-            F.col("Duration").substr(4,2).cast("int") * 60 + 
-            F.col("Duration").substr(7,2).cast("int")
-        )
-    )
-)
-
-#logs.select("Duration_seconds").show()
-
-logs = logs.withColumnRenamed("Duration_seconds", "duration_seconds")
-
-
-(
-    logs.
-    select(sorted(logs.columns)).
-    printSchema()
-)
-
-
-
-
-"""
-(
-    logs.toDF(*[x.lower() for x in logs.columns]).show()
-)
-"""
-
-
-
-
-
-"""
-logs.printSchema()
-
-logs.select("BroadcastLogID","LogServiceID","LogDate").show()
-
-logs.select(*["BroadcastLogID","LogServiceID","LogDate"]).show()
-
-logs.select([F.col("BroadcastLogID"),F.col("LogServiceID")]).show()
-
-"""
-
