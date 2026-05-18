@@ -1,0 +1,23 @@
+|-- episodes: array (nullable = true)
+ |    |-- element: struct (containsNull = true)
+
+ |    |    |-- _links: struct (nullable = true)
+ |    |    |    |-- self: struct (nullable = true)
+ |    |    |    |    |-- href: string (nullable = true)
+
+
+ |    |    |-- airdate: string (nullable = true)
+ |    |    |-- airstamp: string (nullable = true)
+ |    |    |-- airtime: string (nullable = true)
+ |    |    |-- id: long (nullable = true)
+
+ |    |    |-- image: struct (nullable = true)
+ |    |    |    |-- medium: string (nullable = true)
+ |    |    |    |-- original: string (nullable = true)
+ 
+ |    |    |-- name: string (nullable = true)
+ |    |    |-- number: long (nullable = true)
+ |    |    |-- runtime: long (nullable = true)
+ |    |    |-- season: long (nullable = true)
+ |    |    |-- summary: string (nullable = true)
+ |    |    |-- url: string (nullable = true)

@@ -1,5 +1,7 @@
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
+import pyspark.sql.types as T
+
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -86,18 +88,59 @@ shows_clean = shows.withColumn(
                  ).drop("_embedded")
 
 
-shows_clean.printSchema()
+#shows_clean.printSchema()
 
 episodes_name = shows_clean.select("episodes.name")
 
+"""
 episodes_name.select(
     F.explode("name")).show(truncate=False)
 
 
+"""
 
+episodes = (
+    shows.
+    select(
+        "id", 
+        F.
+        explode("_embedded.episodes").
+        alias("episodes")
+    )
+)
 
+(
 
+    shows.select(
+        F.map_from_arrays(
+        "_embedded.episodes.id",
+        "_embedded.episodes.name",
+        ).alias("name_id")
 
+    ).
+    select(
+        F.posexplode(
+        "name_id"
+        ).alias("position","id","name")
+    )
+)
 
+episodes.groupBy("id").agg(
+    F.collect_list("episodes")
+    )
 
+(
 
+    shows.
+    select(
+        F.struct(
+            "status",
+            "weight", 
+            F.lit(True).
+            alias("has_watched")
+        ).
+        alias("info")
+    ).
+    show()
+
+)
